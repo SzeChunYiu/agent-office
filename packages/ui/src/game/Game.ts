@@ -594,6 +594,7 @@ export class OfficeScene extends Phaser.Scene {
         this.drawOfficeFloor(g, size);
         this.drawOuterWalls(g, size);
         this.drawWalkways(g);
+        this.drawWayfindingLayer(g);
 
         const departments: DepartmentZone[] = [
             { name: 'ART', x: 64, y: 72, w: 256, h: 224, accent: 0xd36bff, rug: 0x4b274f, desk: 0x73505f, screen: 0xff83d1, cluster: 'creative' },
@@ -618,6 +619,74 @@ export class OfficeScene extends Phaser.Scene {
             [48, 336], [296, 344], [632, 328], [952, 336], [336, 648],
             [624, 648], [944, 72], [48, 648], [512, 92], [176, 656]
         ].forEach(([x, y]) => this.drawPlant(g, x, y));
+    }
+
+    private drawWayfindingLayer(g: Phaser.GameObjects.Graphics) {
+        this.drawCableRun(g, 140, 348, 850, 348, 0x58d5ff, 'OPS BUS');
+        this.drawCableRun(g, 512, 190, 512, 688, 0xd36bff, 'ART ROUTE');
+        this.drawCableRun(g, 354, 650, 920, 650, 0x43e0c5, 'QA LOOP');
+
+        [
+            { x: 286, y: 336, dir: 'right' as const, color: 0xd36bff },
+            { x: 456, y: 336, dir: 'right' as const, color: 0x58d5ff },
+            { x: 642, y: 336, dir: 'right' as const, color: 0x66e28d },
+            { x: 506, y: 236, dir: 'down' as const, color: 0xd36bff },
+            { x: 506, y: 496, dir: 'down' as const, color: 0x43e0c5 },
+            { x: 682, y: 638, dir: 'right' as const, color: 0x43e0c5 }
+        ].forEach((arrow) => this.drawFloorArrow(g, arrow.x, arrow.y, arrow.dir, arrow.color));
+
+        this.drawFloorStencil(g, 168, 334, 'ART ROUTE', 0xd36bff);
+        this.drawFloorStencil(g, 724, 334, 'OPS BUS', 0x58d5ff);
+        this.drawFloorStencil(g, 406, 638, 'QA LOOP', 0x43e0c5);
+    }
+
+    private drawCableRun(g: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number, color: number, label: string) {
+        const horizontal = y1 === y2;
+        g.lineStyle(2, 0x10131c, 0.8);
+        g.beginPath();
+        g.moveTo(x1, y1);
+        g.lineTo(x2, y2);
+        g.strokePath();
+        g.lineStyle(1, color, 0.52);
+        g.beginPath();
+        g.moveTo(x1, y1 - (horizontal ? 2 : 0));
+        g.lineTo(x2, y2 - (horizontal ? 2 : 0));
+        g.strokePath();
+        const length = Math.abs(horizontal ? x2 - x1 : y2 - y1);
+        for (let step = 0; step < length; step += 48) {
+            const dashOffset = step + (label.length % 7) * 3;
+            const x = horizontal ? Math.min(x1, x2) + dashOffset : x1 - 3;
+            const y = horizontal ? y1 + 3 : Math.min(y1, y2) + dashOffset;
+            g.fillStyle(color, 0.36);
+            g.fillRect(x, y, horizontal ? 18 : 6, horizontal ? 3 : 18);
+        }
+    }
+
+    private drawFloorArrow(g: Phaser.GameObjects.Graphics, x: number, y: number, dir: 'right' | 'down', color: number) {
+        g.fillStyle(color, 0.16);
+        g.fillRect(x - 14, y - 8, 28, 16);
+        g.fillStyle(color, 0.58);
+        if (dir === 'right') {
+            g.fillRect(x - 13, y - 3, 17, 6);
+            g.fillTriangle(x + 4, y - 8, x + 15, y, x + 4, y + 8);
+        } else {
+            g.fillRect(x - 3, y - 13, 6, 17);
+            g.fillTriangle(x - 8, y + 4, x, y + 15, x + 8, y + 4);
+        }
+    }
+
+    private drawFloorStencil(g: Phaser.GameObjects.Graphics, x: number, y: number, label: string, color: number) {
+        g.fillStyle(0x090b12, 0.48);
+        g.fillRect(x - 4, y - 2, 72, 16);
+        g.lineStyle(1, color, 0.28);
+        g.strokeRect(x - 4, y - 2, 72, 16);
+        this.add.text(x + 32, y + 6, label, {
+            fontSize: '7px',
+            color: '#d8f7ff',
+            stroke: '#0b0f18',
+            strokeThickness: 2,
+            letterSpacing: 1
+        }).setOrigin(0.5).setDepth(3.2);
     }
 
     private addAtmosphericOverlays(size: number) {

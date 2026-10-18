@@ -89,6 +89,19 @@ describe('OfficeScene polished office background renderer', () => {
         ].forEach((marker) => expect(source).toContain(marker));
     });
 
+    it('adds professional floor wayfinding and cable detail so corridors read like a shipped game map', () => {
+        [
+            'drawWayfindingLayer',
+            'drawCableRun',
+            'drawFloorArrow',
+            'drawFloorStencil',
+            'ART ROUTE',
+            'QA LOOP',
+            'OPS BUS',
+            'dashOffset'
+        ].forEach((marker) => expect(source).toContain(marker));
+    });
+
 
     it('registers early server bootstrap messages to avoid Colyseus warning noise', () => {
         expect(source).toContain("onMessage('tasks-sync'");
